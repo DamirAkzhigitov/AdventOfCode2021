@@ -37,7 +37,28 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        fun calculateRating(type: RatingType): String {
+            val columns = input[0].indices // [0, 1, 2, 3, 4, 5]
+            var bitNumbers = input
+            for (column in columns) {
+                val (zeroes, ones) = bitNumbers.countBits(column)
+
+                val mostCommon = if (zeroes > ones) '0' else '1'
+                bitNumbers = bitNumbers.filter {
+                    when (type) {
+                        RatingType.OXYGEN -> it[column] == mostCommon
+                        RatingType.CO2 -> it[column] != mostCommon
+                    }
+                }
+                if (bitNumbers.size == 1) break
+            }
+
+            return bitNumbers.single()
+        }
+        val oxygenDecimal = calculateRating(RatingType.OXYGEN).toInt(2)
+        val co2Decimal = calculateRating(RatingType.CO2).toInt(2)
+
+        return oxygenDecimal * co2Decimal
     }
 
     // test if implementation meets criteria from the description, like:
@@ -51,4 +72,18 @@ fun main() {
     val input = readInput("Day03")
     part1(input).println()
     part2(input).println()
+}
+private fun List<String>.countBits(column: Int): BitCount {
+    var zeroes = 0
+    var ones = 0
+    for (line in this) {
+        if (line[column] == '0') zeroes++ else ones++
+    }
+    return BitCount(zeroes, ones)
+}
+
+data class BitCount(val zeroes: Int, val ones: Int)
+private enum class RatingType {
+    OXYGEN,
+    CO2
 }
